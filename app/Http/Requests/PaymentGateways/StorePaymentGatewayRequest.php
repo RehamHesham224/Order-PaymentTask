@@ -3,7 +3,6 @@
 namespace App\Http\Requests\PaymentGateways;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StorePaymentGatewayRequest extends FormRequest
 {

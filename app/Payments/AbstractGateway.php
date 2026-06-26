@@ -3,7 +3,6 @@
 namespace App\Payments;
 
 use App\Payments\Contracts\PaymentGatewayInterface;
-use InvalidArgumentException;
 
 abstract class AbstractGateway implements PaymentGatewayInterface
 {

@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Database\Factories\PaymentGatewayConfigFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentGatewayConfig extends BaseModel
 {
-    /** @use HasFactory<\Database\Factories\PaymentGatewayConfigFactory> */
+    /** @use HasFactory<PaymentGatewayConfigFactory> */
     use HasFactory;
 
     protected $table = 'payment_gateways';

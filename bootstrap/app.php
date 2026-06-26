@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -30,19 +31,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'Validation failed.', 'errors' => $e->errors()], 422);
             }
         });
-       $exceptions->render(function (Throwable $e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             if (! $request->is('api/*')) {
                 return;
             }
 
             return match (true) {
-                $e instanceof ModelNotFoundException       => response()->json(['message' => 'Resource not found.'], 404),
-                $e instanceof NotFoundHttpException        => response()->json(['message' => 'Route not found.'], 404),
+                $e instanceof ModelNotFoundException => response()->json(['message' => 'Resource not found.'], 404),
+                $e instanceof NotFoundHttpException => response()->json(['message' => 'Route not found.'], 404),
                 $e instanceof MethodNotAllowedHttpException => response()->json(['message' => 'Method not allowed.'], 405),
-                $e instanceof AuthenticationException      => response()->json(['message' => 'Unauthenticated.'], 401),
-                $e instanceof AuthorizationException       => response()->json(['message' => 'Unauthorized.'], 403),
-                $e instanceof ValidationException          => response()->json(['message' => 'Validation failed.', 'errors' => $e->errors()], 422),
-                default                                    => response()->json(['message' => 'Server error.'], 500),
+                $e instanceof AuthenticationException => response()->json(['message' => 'Unauthenticated.'], 401),
+                $e instanceof AuthorizationException => response()->json(['message' => 'Unauthorized.'], 403),
+                $e instanceof ValidationException => response()->json(['message' => 'Validation failed.', 'errors' => $e->errors()], 422),
+                default => response()->json(['message' => 'Server error.'], 500),
             };
         });
     })->create();

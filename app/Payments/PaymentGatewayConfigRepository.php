@@ -3,7 +3,6 @@
 namespace App\Payments;
 
 use App\Models\PaymentGatewayConfig;
-use App\Payments\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Schema;
 
 class PaymentGatewayConfigRepository

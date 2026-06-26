@@ -4,6 +4,7 @@ namespace Tests\Feature\Payments;
 
 use App\Models\Order;
 use App\Models\PaymentGatewayConfig;
+use App\Payments\PaymentGatewayManager;
 use Tests\ApiTestCase;
 
 class PaymentDatabaseConfigTest extends ApiTestCase
@@ -18,7 +19,7 @@ class PaymentDatabaseConfigTest extends ApiTestCase
         ]);
 
         // Re-resolve manager so it picks up DB config for this request
-        app()->forgetInstance(\App\Payments\PaymentGatewayManager::class);
+        app()->forgetInstance(PaymentGatewayManager::class);
 
         $order = Order::factory()->confirmed()->create(['total' => 200.00]);
 

@@ -2,6 +2,8 @@
 
 namespace App\Support\Api;
 
+use Illuminate\Http\JsonResponse;
+
 trait ApiResponse
 {
     protected int $code = 200;
@@ -14,7 +16,7 @@ trait ApiResponse
 
     protected ?string $message = null;
 
-    protected function apiResponse(): \Illuminate\Http\JsonResponse
+    protected function apiResponse(): JsonResponse
     {
         return response()->json([
             'custom_code' => $this->customCode,
