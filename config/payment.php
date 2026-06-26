@@ -5,6 +5,17 @@ use App\Payments\Gateways\PayPalGateway;
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Gateways
+    |--------------------------------------------------------------------------
+    |
+    | Gateways can be configured via .env (below) and/or the payment_gateways
+    | database table. Database config merges with and overrides file/env values
+    | for the same gateway name. Run: php artisan db:seed --class=PaymentGatewaySeeder
+    |
+    */
+
     'gateways' => [
         'credit_card' => [
             'driver' => CreditCardGateway::class,

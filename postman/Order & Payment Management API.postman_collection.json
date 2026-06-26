@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "8df6296d-ea82-43da-88e7-0f08d17f1862",
     "name": "Order & Payment Management API",
-    "description": "RESTful API for managing orders and payments with JWT authentication and extensible payment gateways.\n\n## Setup\n1. Import this collection into Postman.\n2. Set the `base_url` variable (default: `http://localhost:8000/api`).\n3. Register or login — the `access_token` is saved automatically.\n4. Use the Orders and Payments folders for CRUD operations.\n\n## Simulated Payment Behavior\n- **Credit Card**: Any card number succeeds except those ending in `0000`.\n- **PayPal**: Any email succeeds except those containing `fail`.",
+    "description": "RESTful API for managing orders and payments with JWT authentication, filterable list endpoints, standardized ApiResponse format, and extensible payment gateways.\n\n## Setup\n1. Import this collection into Postman.\n2. Set `base_url` (default: `http://localhost:8000/api`).\n3. Register or login — `access_token` is saved automatically from `body.access_token`.\n4. Run requests in order: Auth → Orders → Payments → Payment Gateways.\n\n## Response Format\nAll endpoints return: `{ custom_code, status, message, body }`\nNote: `status` is `true` only when HTTP status is exactly 200.\n\n## Simulated Payment Behavior\n- **Credit Card**: succeeds except cards ending in `0000`.\n- **PayPal**: succeeds except emails containing `fail`.\n\n## Gateway Configuration\nConfigure via `.env` or `/api/payment-gateways`. Database config overrides `.env` for the same gateway name.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "15044307",
     "_collection_link": "https://go.postman.co/collection/15044307-8df6296d-ea82-43da-88e7-0f08d17f1862?source=collection_link"
@@ -20,7 +20,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set('access_token', json.access_token);",
+                  "    pm.collectionVariables.set('access_token', json.body.access_token);",
                   "}"
                 ],
                 "type": "text/javascript",
@@ -71,7 +71,7 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set('access_token', json.access_token);",
+                  "    pm.collectionVariables.set('access_token', json.body.access_token);",
                   "}"
                 ],
                 "type": "text/javascript",
@@ -191,7 +191,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data retrieved successfully.\",\n    \"body\": {\n        \"user\": {\n            \"id\": 1,\n            \"name\": \"Jane Doe\",\n            \"email\": \"jane@example.com\"\n        }\n    },\n    \"info\": \"from response action\"\n}"
+              "body": "{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data retrieved successfully.\",\n    \"body\": {\n        \"user\": {\n            \"id\": 1,\n            \"name\": \"Jane Doe\",\n            \"email\": \"jane@example.com\"\n        }\n    }\n}"
             }
           ]
         },
@@ -234,7 +234,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/orders?status=pending&per_page=15",
+              "raw": "{{base_url}}/orders?status=pending&search=&per_page=15",
               "host": [
                 "{{base_url}}"
               ],
@@ -248,12 +248,17 @@
                   "description": "Filter: pending, confirmed, cancelled"
                 },
                 {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search customer_name or customer_email"
+                },
+                {
                   "key": "per_page",
                   "value": "15"
                 }
               ]
             },
-            "description": "Retrieve paginated orders. Optional `status` filter.\n\n**Success (200):** Paginated list with `data`, `links`, `meta`.\n\n``` bash\n{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data retrieved successfully.\",\n    \"body\": {\n        \"orders\": {\n            \"data\": [\n                {\n                    \"id\": 1,\n                    \"customer_name\": \"John Smith\",\n                    \"customer_email\": \"john@example.com\",\n                    \"status\": \"pending\",\n                    \"total\": \"100.00\",\n                    \"items\": [\n                        {\n                            \"id\": 1,\n                            \"product_name\": \"Widget\",\n                            \"quantity\": 2,\n                            \"price\": \"25.50\",\n                            \"subtotal\": \"51.00\"\n                        },\n                        {\n                            \"id\": 2,\n                            \"product_name\": \"Gadget\",\n                            \"quantity\": 1,\n                            \"price\": \"49.00\",\n                            \"subtotal\": \"49.00\"\n                        }\n                    ],\n                    \"created_at\": \"2026-06-25T14:16:43+00:00\",\n                    \"updated_at\": \"2026-06-25T14:16:43+00:00\"\n                }\n            ],\n            \"pagination\": {\n                \"total\": 1,\n                \"count\": 1,\n                \"per_page\": 15,\n                \"current_page\": 1,\n                \"total_pages\": 1\n            }\n        }\n    }\n}\n\n ```"
+            "description": "Retrieve paginated orders.\n\n**Query params:** `status`, `search`, `per_page`\n\n**Success (200):** Paginated list in `body.orders.data` with `body.orders.pagination`."
           },
           "response": []
         },
@@ -265,7 +270,8 @@
               "script": {
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    pm.collectionVariables.set('order_id', pm.response.json().data.id);",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('order_id', json.body.order.id);",
                   "}"
                 ],
                 "type": "text/javascript",
@@ -364,7 +370,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data created successfully.\",\n    \"body\": {\n        \"order\": {\n            \"id\": 1,\n            \"customer_name\": \"John Smith\",\n            \"customer_email\": \"john@example.com\",\n            \"status\": \"pending\",\n            \"total\": \"100.00\",\n            \"items\": [\n                {\n                    \"id\": 1,\n                    \"product_name\": \"Widget\",\n                    \"quantity\": 2,\n                    \"price\": \"25.50\",\n                    \"subtotal\": \"51.00\"\n                },\n                {\n                    \"id\": 2,\n                    \"product_name\": \"Gadget\",\n                    \"quantity\": 1,\n                    \"price\": \"49.00\",\n                    \"subtotal\": \"49.00\"\n                }\n            ],\n            \"created_at\": \"2026-06-25T14:16:43+00:00\",\n            \"updated_at\": \"2026-06-25T14:16:43+00:00\"\n        }\n    },\n    \"info\": \"from response action\"\n}"
+              "body": "{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data created successfully.\",\n    \"body\": {\n        \"order\": {\n            \"id\": 1,\n            \"customer_name\": \"John Smith\",\n            \"customer_email\": \"john@example.com\",\n            \"status\": \"pending\",\n            \"total\": \"100.00\",\n            \"items\": [\n                {\n                    \"id\": 1,\n                    \"product_name\": \"Widget\",\n                    \"quantity\": 2,\n                    \"price\": \"25.50\",\n                    \"subtotal\": \"51.00\"\n                },\n                {\n                    \"id\": 2,\n                    \"product_name\": \"Gadget\",\n                    \"quantity\": 1,\n                    \"price\": \"49.00\",\n                    \"subtotal\": \"49.00\"\n                }\n            ],\n            \"created_at\": \"2026-06-25T14:16:43+00:00\",\n            \"updated_at\": \"2026-06-25T14:16:43+00:00\"\n        }\n    }\n}"
             }
           ]
         },
@@ -379,13 +385,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/orders/5{{order_id}}",
+              "raw": "{{base_url}}/orders/{{order_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "orders",
-                "5{{order_id}}"
+                "{{order_id}}"
               ]
             },
             "description": "Get an order. .\n\n**Success (200):**\n\n``` bash\n{\n    \"custom_code\": 2000,\n    \"status\": true,\n    \"message\": \"Data retrieved successfully.\",\n    \"body\": {\n        \"order\": {\n            \"id\": 1,\n            \"customer_name\": \"John Smith\",\n            \"customer_email\": \"john@example.com\",\n            \"status\": \"pending\",\n            \"total\": \"100.00\",\n            \"items\": [\n                {\n                    \"id\": 1,\n                    \"product_name\": \"Widget\",\n                    \"quantity\": 2,\n                    \"price\": \"25.50\",\n                    \"subtotal\": \"51.00\"\n                },\n                {\n                    \"id\": 2,\n                    \"product_name\": \"Gadget\",\n                    \"quantity\": 1,\n                    \"price\": \"49.00\",\n                    \"subtotal\": \"49.00\"\n                }\n            ],\n            \"payments\": [],\n            \"created_at\": \"2026-06-25T14:16:43+00:00\",\n            \"updated_at\": \"2026-06-25T14:16:43+00:00\"\n        }\n    }\n}\n\n ```\n\n**Error (422):** Validation errors for missing items or invalid prices.\n\n``` bash\n{\n    \"message\": \"Route not found.\"\n}\n\n ```"
@@ -521,21 +527,7 @@
       "item": [
         {
           "name": "Process Credit Card Payment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    pm.collectionVariables.set('payment_id', pm.response.json().data.id);",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "header": [
@@ -602,6 +594,22 @@
         },
         {
           "name": "List All Payments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const payments = pm.response.json().body.payments.data;",
+                  "    if (payments && payments.length > 0) {",
+                  "        pm.collectionVariables.set('payment_id', payments[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -622,7 +630,26 @@
                 {
                   "key": "order_id",
                   "value": "{{order_id}}",
-                  "disabled": true
+                  "disabled": true,
+                  "description": "Filter by order ID"
+                },
+                {
+                  "key": "status",
+                  "value": "successful",
+                  "disabled": true,
+                  "description": "Filter: pending, successful, failed"
+                },
+                {
+                  "key": "payment_method",
+                  "value": "credit_card",
+                  "disabled": true,
+                  "description": "Filter: credit_card, paypal"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Search payment_id, payment_method, gateway"
                 },
                 {
                   "key": "per_page",
@@ -688,6 +715,91 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Payment Gateways",
+      "item": [
+        {
+          "name": "List Payment Gateways",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const gateways = pm.response.json().body.payment_gateways;",
+                  "    if (gateways && gateways.length > 0) {",
+                  "        pm.collectionVariables.set('payment_gateway_id', gateways[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/payment-gateways",
+            "description": "List all payment gateway configurations stored in the database.\n\nSensitive fields (api_key, secret, client_id, client_secret) are masked in responses.\n\n**Success (200):** `body.payment_gateways` array."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Gateway",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/payment-gateways/{{payment_gateway_id}}",
+            "description": "Get a single gateway configuration by ID.\n\n**Success (200):** `body.payment_gateway` object with masked secrets."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment Gateway",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"credit_card\",\n  \"driver_class\": \"App\\\\Payments\\\\Gateways\\\\CreditCardGateway\",\n  \"is_active\": true,\n  \"config\": {\n    \"api_key\": \"sk_test_your_api_key\",\n    \"secret\": \"whsec_your_secret\"\n  }\n}"
+            },
+            "url": "{{base_url}}/payment-gateways",
+            "description": "Create or register a gateway configuration in the database.\n\nDatabase config overrides `.env` values for the same gateway name on the next request.\n\n**Success (201):** `{ \"message\": \"Data created successfully.\" }`\n\n**Error (422):** Invalid driver class or duplicate name."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Payment Gateway",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"config\": {\n    \"api_key\": \"sk_live_updated_key\",\n    \"secret\": \"whsec_updated_secret\"\n  }\n}"
+            },
+            "url": "{{base_url}}/payment-gateways/{{payment_gateway_id}}",
+            "description": "Update gateway credentials or toggle active status.\n\n**Deactivate:** `{ \"is_active\": false }`\n\n**Success (200):** `{ \"message\": \"Data updated successfully.\" }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Payment Gateway",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/payment-gateways/{{payment_gateway_id}}",
+            "description": "Remove a gateway configuration from the database. Falls back to `.env` config if still defined in `config/payment.php`.\n\n**Success (200):** `{ \"message\": \"Data deleted successfully.\" }`"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {
@@ -739,6 +851,10 @@
     },
     {
       "key": "payment_id",
+      "value": "1"
+    },
+    {
+      "key": "payment_gateway_id",
       "value": "1"
     }
   ]

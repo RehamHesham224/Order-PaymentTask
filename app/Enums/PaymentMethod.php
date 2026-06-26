@@ -6,7 +6,7 @@ enum PaymentMethod: string
 {
     case CreditCard = 'credit_card';
     case PayPal = 'paypal';
-    case BankTransfer = 'bank_transfer';
+    // case BankTransfer = 'bank_transfer';
 
     public static function values(): array
     {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PaymentGatewayController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -18,7 +19,10 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('orders', OrderController::class);
 
-    Route::apiResource('payments', PaymentController::class)->only(['index', 'show']);
+    Route::apiResource('payment-gateways', PaymentGatewayController::class);
+
+    Route::get('payments', [PaymentController::class, 'index']);
+    Route::get('payments/{payment}', [PaymentController::class, 'show']);
 
     Route::post('orders/{order}/payments', [PaymentController::class, 'store']);
 });

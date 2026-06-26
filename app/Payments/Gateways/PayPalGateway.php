@@ -5,11 +5,11 @@ namespace App\Payments\Gateways;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
-use App\Payments\Contracts\PaymentGatewayInterface;
+use App\Payments\AbstractGateway;
 use App\Payments\DTOs\PaymentResult;
 use Illuminate\Support\Str;
 
-class PayPalGateway implements PaymentGatewayInterface
+class PayPalGateway extends AbstractGateway
 {
     public function getName(): string
     {
@@ -23,8 +23,7 @@ class PayPalGateway implements PaymentGatewayInterface
 
     public function process(Order $order, array $payload): PaymentResult
     {
-        $clientId = config('payment.gateways.paypal.client_id');
-        $clientSecret = config('payment.gateways.paypal.client_secret');
+        $clientId = $this->config('client_id');
         $email = $payload['paypal_email'] ?? '';
 
         if (Str::contains($email, 'fail')) {

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Payments\PaymentGatewayConfigRepository;
+use App\Payments\PaymentGatewayFactory;
 use App\Payments\PaymentGatewayManager;
 use Illuminate\Support\ServiceProvider;
 
@@ -9,15 +11,16 @@ class PaymentServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(PaymentGatewayManager::class, function () {
+        $this->app->singleton(PaymentGatewayConfigRepository::class);
+        $this->app->singleton(PaymentGatewayFactory::class);
+
+        $this->app->singleton(PaymentGatewayManager::class, function ($app) {
             $manager = new PaymentGatewayManager;
+            $repository = $app->make(PaymentGatewayConfigRepository::class);
+            $factory = $app->make(PaymentGatewayFactory::class);
 
-            foreach (config('payment.gateways', []) as $gatewayConfig) {
-                $driverClass = $gatewayConfig['driver'] ?? null;
-
-                if ($driverClass && class_exists($driverClass)) {
-                    $manager->register(app($driverClass));
-                }
+            foreach ($repository->all() as $name => $gatewayConfig) {
+                $manager->register($factory->make($name, $gatewayConfig));
             }
 
             return $manager;

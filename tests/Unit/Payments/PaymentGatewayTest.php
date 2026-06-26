@@ -24,9 +24,7 @@ class PaymentGatewayTest extends TestCase
 
     public function test_credit_card_gateway_simulates_successful_payment(): void
     {
-        config(['payment.gateways.credit_card.api_key' => 'test_api_key']);
-
-        $gateway = new CreditCardGateway;
+        $gateway = new CreditCardGateway(['api_key' => 'test_api_key']);
         $order = Order::factory()->confirmed()->create(['total' => 99.99]);
 
         $result = $gateway->process($order, ['card_number' => '4111111111111111']);
@@ -50,9 +48,7 @@ class PaymentGatewayTest extends TestCase
 
     public function test_paypal_gateway_fails_when_email_contains_fail(): void
     {
-        config(['payment.gateways.paypal.client_id' => 'test_client']);
-
-        $gateway = new PayPalGateway;
+        $gateway = new PayPalGateway(['client_id' => 'test_client']);
         $order = Order::factory()->confirmed()->create();
 
         $result = $gateway->process($order, ['paypal_email' => 'fail@example.com']);
@@ -63,8 +59,8 @@ class PaymentGatewayTest extends TestCase
     public function test_gateway_manager_resolves_gateway_by_payment_method(): void
     {
         $manager = new PaymentGatewayManager;
-        $manager->register(new CreditCardGateway);
-        $manager->register(new PayPalGateway);
+        $manager->register(new CreditCardGateway([]));
+        $manager->register(new PayPalGateway([]));
 
         $this->assertInstanceOf(CreditCardGateway::class, $manager->resolve('credit_card'));
         $this->assertInstanceOf(PayPalGateway::class, $manager->resolve('paypal'));

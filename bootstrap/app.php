@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
+use Throwable;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -42,7 +42,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 $e instanceof AuthenticationException      => response()->json(['message' => 'Unauthenticated.'], 401),
                 $e instanceof AuthorizationException       => response()->json(['message' => 'Unauthorized.'], 403),
                 $e instanceof ValidationException          => response()->json(['message' => 'Validation failed.', 'errors' => $e->errors()], 422),
-                $e instanceof Nette\Schema\ValidationException => response()->json(['message' => 'Schema validation failed.', 'errors' => $e->errors()], 422),
                 default                                    => response()->json(['message' => 'Server error.'], 500),
             };
         });

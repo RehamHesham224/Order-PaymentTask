@@ -47,9 +47,10 @@ class PaymentController extends ApiController
 
     public function store(ProcessPaymentRequest $request, Order $order)
     {
-        $this->paymentService->process($order, $request->validated());
+        $payment = $$this->paymentService->process($order, $request->validated());
 
-        return self::apiMessage(__('app.messages.data_created'))
+        return self::apiBody(['payment' => PaymentResource::make($payment)])
+            ->apiMessage(__('app.messages.data_created'))
             ->apiCode(201)
             ->apiResponse();
     }

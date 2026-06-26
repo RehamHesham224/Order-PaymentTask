@@ -5,11 +5,11 @@ namespace App\Payments\Gateways;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
-use App\Payments\Contracts\PaymentGatewayInterface;
+use App\Payments\AbstractGateway;
 use App\Payments\DTOs\PaymentResult;
 use Illuminate\Support\Str;
 
-class CreditCardGateway implements PaymentGatewayInterface
+class CreditCardGateway extends AbstractGateway
 {
     public function getName(): string
     {
@@ -23,7 +23,7 @@ class CreditCardGateway implements PaymentGatewayInterface
 
     public function process(Order $order, array $payload): PaymentResult
     {
-        $apiKey = config('payment.gateways.credit_card.api_key');
+        $apiKey = $this->config('api_key');
         $cardNumber = $payload['card_number'] ?? '';
 
         $lastFour = Str::substr(preg_replace('/\D/', '', $cardNumber), -4);

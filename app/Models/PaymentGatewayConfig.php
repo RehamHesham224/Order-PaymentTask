@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class PaymentGatewayConfig extends Model
+class PaymentGatewayConfig extends BaseModel
 {
+    /** @use HasFactory<\Database\Factories\PaymentGatewayConfigFactory> */
+    use HasFactory;
+
     protected $table = 'payment_gateways';
 
     protected $fillable = [
@@ -20,6 +23,18 @@ class PaymentGatewayConfig extends Model
         return [
             'is_active' => 'boolean',
             'config' => 'array',
+        ];
+    }
+
+    /** @return array<int, string> */
+    public static function sensitiveConfigKeys(): array
+    {
+        return [
+            'api_key',
+            'secret',
+            'client_id',
+            'client_secret',
+            'webhook_secret',
         ];
     }
 }

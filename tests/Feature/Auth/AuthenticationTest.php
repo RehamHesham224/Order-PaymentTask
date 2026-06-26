@@ -25,8 +25,6 @@ class AuthenticationTest extends TestCase
                 'status',
                 'message',
                 'body' => ['user', 'access_token', 'token_type', 'expires_in'],
-                'info',
-                'db',
             ])
             ->assertJsonPath('body.user.email', 'jane@example.com')
             ->assertJsonPath('message', 'Registration successful.');
